@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/sweetalert2.min.css' %}">
+    <script src="{% static 'js/jquery-3.2.1.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'js/jquery.cookie.js' %}"></script>
+    <script src="{% static 'js/sweetalert2.min.js' %}"></script>
+
+
+</head>
+<body style="background-color: #f8f8f8">
+
+<div class="container   col-md-4 col-lg-offset-4 ">
+
+    <div class="panel panel-info " style="margin-top: 100px">
+        <div class="panel-heading" style="padding: 5px 0">
+            <h4 class="text-center">请登录</h4>
+        </div>
+        <div class="row">
+            <div class="panel-body col-md-10 col-md-offset-1">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="form-group user">
+                        <label for="exampleInputEmail1">用户名:</label>
+                        <input type="text" class="form-control" id="username" placeholder="username">
+                        <span id="helpBlock2" class="help-block"></span>
+                    </div>
+                    <div class="form-group">
+                        <label for="exampleInputPassword1">密码:</label>
+                        <input type="password" class="form-control" id="password" placeholder="password">
+                        <span id="helpBlock3" class="help-block"></span>
+                    </div>
+                    <div class="row">
+                        <div class="form-group  col-md-6">
+                            <label for="validateCode">验证码:</label>
+                            <input type="password" class="form-control" id="validateCode">
+                            <span id="helpBlock4" class="help-block"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <img src="/get_validCode/" alt="" width="150px" height="40px" style="margin-top: 20px;"
+                                 id="imgCode">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <span class="failed" style="color: red"></span>
+                    </div>
+                    <div class="form-group col-lg-offset-4 col-md-4">
+                        <input type="button" value="登&nbsp;&nbsp;录" class="form-control btn-primary" id="subBtn">
+
+                        <div id="popup-captcha"></div>
+
+                        <span class="error"></span>
+
+                    </div>
+
+                </form>
+                <div class="from-group">
+                    <span class="form-group pull-right"><span>还没有账号？<a href="/register/">点击注册</a></span></span>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<script>
+    //验证码图片刷新
+    $("#imgCode").on("click", function () {
+        $(this)[0].src += "?"
+    });
+    //ajax 登录
+    $("#subBtn").on("click", function () {
+
+        $.ajax(
+                {
+                    url: "/sign_in/",
+                    type: "POST",
+                    {#                    headers: {"X-CSRFToken": $.cookie('csrftoken')},#}
+                    data: {
+                        csrfmiddlewaretoken: $("[name='csrfmiddlewaretoken']").val(),
+                        user: $("#username").val(),
+                        pwd: $("#password").val(),
+                        validCode: $("#validateCode").val()
+
+                    },
+                    success: function (data) {
+
+                        var dat = JSON.parse(data);
+
+                        if (dat["state"] == "success") {
+                            swal(
+                                    '',
+                                    '登录成功,正在跳转...',
+                                    'success'
+                            );
+                            setTimeout(function () {
+                                if (location.search.slice(6)) {
+                                    location.href = location.search.slice(6)
+                                }
+                                else {
+                                    location.href = "/"
+                                }
+                            }, 3000);
+
+                        }
+                        if (dat["state"] == "user_none") {
+                            $("#username").focus();
+                            var use = $("#helpBlock2");
+                            use.parent().addClass("has-error");
+                            use.html("请输入用户名")
+                        }
+                        if (dat["state"] == "pwd_none") {
+                            $("#password").focus();
+                            var pwd = $("#helpBlock3");
+                            pwd.parent().addClass("has-error");
+                            pwd.html("请输入登录密码")
+                        }
+                        if (dat["state"] == "validCode_none") {
+                            $("#validateCode").focus();
+                            var valid = $("#helpBlock4");
+                            valid.parent().addClass("has-error");
+                            valid.html("请输入验证码")
+                        }
+                        if (dat["state"] == "validCode_error") {
+                            $("#validateCode").focus();
+                            var valid_error = $("#helpBlock4");
+                            valid_error.parent().addClass("has-error");
+                            valid_error.html("验证码错误")
+                        }
+                        if (dat["state"] == "failed") {
+
+                            swal(
+                                    '',
+                                    '用户名或密码错误',
+                                    'error'
+                            )
+                        }
+
+
+                    }
+                }
+        )
+    });
+</script>
+</body>
+</html>
