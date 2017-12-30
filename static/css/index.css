@@ -1,0 +1,44 @@
+
+body {
+    background: url("/static/image/bg-yellow.png") repeat;
+
+
+}
+
+.my-navbar a {
+    background: transparent !important;
+    color: #fff !important
+}
+
+.my-navbar a:hover {
+    color: #45bcf9 !important;
+    background: transparent;
+    outline: 0
+}
+
+#user_container {
+    margin-top: 100px;
+}
+
+.user_avatar {
+    width: 70px;
+    height: 70px;
+}
+.hides{
+    display: none;
+}
+.article_title{
+    margin-left: 0;
+}
+.pub_info{
+    margin-left: 0;
+}
+.sitearticle{
+    margin-left: 10px;
+}
+.cate_title{
+    padding: 8px 15px;
+}
+.paneltitle{
+    margin-bottom: 10px;
+}

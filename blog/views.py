@@ -131,3 +131,15 @@ def register(request):
             else:
                 registerResponse ["error_list"] = form.errors
             return HttpResponse (json.dumps (registerResponse))
+
+def index(request,*args,**kwargs):
+    if kwargs:
+        article_list = models.Article.objects.filter(site_article_category__name=kwargs.get("site_article_category"))
+    else:
+        article_list = models.Article.objects.all()
+    cate_list = models.SiteCategory.objects.all()
+    return render(request,'index.html',{"article_list":article_list,"cate_list":cate_list})
+
+
+def homeSite(request):
+    pass

@@ -6,7 +6,7 @@ class UserInfo(AbstractUser):
     用户表，继承AbstractUser,覆盖auth.user表
     '''
     nick_name = models.CharField(max_length=32,verbose_name="昵称")
-    telephone = models.IntegerField(verbose_name="手机号")
+    telephone = models.IntegerField(verbose_name="手机号",blank = True,null = True)
     avatar = models.FileField(verbose_name="头像",upload_to="avatar",default="/avatar/default.png")
     create_time = models.DateTimeField(verbose_name="创建时间",auto_now_add=True)
 

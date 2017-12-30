@@ -25,6 +25,7 @@ SECRET_KEY = '_s3#h1&h_^!_=tti%$a+j0r$1vb-1m7n-m!7ckt64n@cigc0xv'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+
 ALLOWED_HOSTS = []
 
 
@@ -38,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'blog',
+
 ]
 
 MIDDLEWARE = [
@@ -123,5 +125,12 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR,'static'),
 ]
+
+
+MEDIA_URL = "/media/"
+
+MEDIA_ROOT = os.path.join(BASE_DIR,"blog","media")
+
+
 
 AUTH_USER_MODEL = "blog.UserInfo"
