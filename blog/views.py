@@ -4,11 +4,21 @@ from io import BytesIO
 
 from django.shortcuts import render,HttpResponse
 from django.contrib import auth
+from django.contrib.auth.hashers import make_password, check_password
 
 from PIL import Image,ImageDraw,ImageFont
 
+from blog.forms import RegisterForm
+from blog import models
 
 # Create your views here.
+def md5(val):
+    import hashlib
+    m = hashlib.md5()
+    m.update(val.encode('utf-8'))
+    return m.hexdigest()
+
+
 
 
 def sign_in(request):
@@ -36,8 +46,8 @@ def sign_in(request):
         if validCode == "":
             state["state"] = "validCode_none"
             return HttpResponse(json.dumps(state))
-        if validCode.upper() == request.session.get("keepValidCode").upper():
-            user = auth.authenticate(username=username, password=password)
+        if validCode.upper() == request.session.get("ValidCode").upper():
+            user = auth.authenticate(username=username,password=md5(password))
             if user:
                 state["state"] = "success"
                 auth.login(request, user)
@@ -94,3 +104,30 @@ def get_valid_code(request):
     print(valid_str)
     request.session["ValidCode"] = valid_str
     return HttpResponse(data)
+
+def register(request):
+
+        if request.method == "GET":
+            form = RegisterForm ()
+            return render (request,'register.html',{"form":form})
+        elif request.is_ajax ():
+
+            form = RegisterForm (request.POST)
+            registerResponse = {"user":None,"error_list":None}
+            # print(type(form))
+            if form.is_valid ():
+
+                email = form.cleaned_data.get ("email")
+                telephone = form.cleaned_data.get ("telephone")
+                username = form.cleaned_data.get ("username")
+                nick_name = form.cleaned_data.get ("nick_name")
+                password = form.cleaned_data.get ("password")
+                avatar_img = request.FILES.get ("avatar_img")
+
+                models.UserInfo.objects.create_user (email = email,telephone = telephone,username = username,
+                                                     nick_name = nick_name,password = md5(password),avatar = avatar_img)
+                registerResponse ["user"] = form.cleaned_data.get ("username")
+
+            else:
+                registerResponse ["error_list"] = form.errors
+            return HttpResponse (json.dumps (registerResponse))

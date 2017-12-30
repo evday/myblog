@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/css/sweetalert2.min.css">
+    <link rel="stylesheet" href="/static/css/register.css">
+
+    <script src="/static/js/jquery-3.2.1.min.js"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
+    <script src="/static/js/jquery.cookie.js"></script>
+    <script src="/static/js/sweetalert2.min.js"></script>
+
+
+
+</head>
+<body style="background-color: #f8f8f8">
+<nav class="navbar navbar-inverse navbar-fixed-top my-navbar">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                    data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#" style="font-size: 30px">博&nbsp;客&nbsp;苑</a>
+        </div>
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="/"><span class="glyphicon glyphicon-home " style="font-size: 15px"></span>&nbsp;首&nbsp;页</a>
+                </li>
+                <li><a href="/sign_in/"><span class="glyphicon glyphicon-user" style="font-size: 15px"></span>&nbsp;登&nbsp;录</a>
+                </li>
+                <li><a href="/register/"><span class="glyphicon glyphicon-user" style="font-size: 15px"><span
+                        class=" glyphico glyphicon-plus-sign" style="font-size: 2px;"></span></span>&nbsp;注&nbsp;册</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container" style="margin-top: 100px">
+
+    <div class="row col-md-11 ">
+        <div class="col-md-offset-1">
+        <h3>注册新用户</h3>
+        <hr>
+    </div>
+        <div class="col-md-7">
+            <form class="form-horizontal" id="s1" method="post" novalidate>
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="inputEmail"
+                           class="col-sm-3 control-label  col-md-offset-1">邮&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;箱：</label>
+                    <div class="col-md-8">
+                        {{ form.email }}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="inputPhone" class="col-sm-3 control-label col-md-offset-1">手机号码：</label>
+                    <div class="col-md-8">
+                        {{ form.telephone }}
+
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="inputUser" class="col-sm-3 control-label col-md-offset-1">用户名称：</label>
+                    <div class="col-md-8">
+                            {{ form.username }}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="inputNickname"
+                           class="col-sm-3 control-label col-md-offset-1">昵&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;称：</label>
+                    <div class="col-md-8">
+                        {{ form.nick_name }}
+                        <span id="input">{{ form.errors.nick_name.0 }}</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="inputPassword"
+                           class="col-sm-3 control-label col-md-offset-1">密&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;码：</label>
+                    <div class="col-md-8">
+
+                        {{ form.password }}
+
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="inputRepeatPassword" class="col-sm-3 control-label col-md-offset-1">确认密码：</label>
+                    <div class="col-md-8">
+
+                           {{ form.repeat_password }}
+
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="inputRepeatPassword" class="col-sm-3 control-label col-md-offset-1">头像：</label>
+                    <div class="col-md-8 avatar">
+                        <a href=""><img src="/static/image/default.png" alt="" id="avatar_img"></a>
+                        <input type="file" class="form-control" id="avatar_file">
+
+
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-2" style="margin-left:330px">
+
+                        <input type="button" value="注&nbsp;&nbsp;册" class="form-control btn-primary" id="register">
+
+                    </div>
+                </div>
+                <div style="margin-left:230px">
+                    <span>点击"注册"按钮,表示您已同意和遵守<a href="">用户协议</a></span>
+                </div>
+            </form>
+        </div>
+        <div class="col-sm-1">
+            <table style="height:280px;border-color:#cccccc;border-left-style:solid;border-width:1px">
+                <tr>
+                    <td valign="top"></td>
+                </tr>
+            </table>
+        </div>
+        <div class="col-md-4">
+            <img src="/static/image/registersideimg.png" alt="" style="width: 300px;height: 280px;border-radius: 8px">
+        </div>
+
+    </div>
+</div>
+<script>
+    //头像预览
+$("#avatar_file").change(function () {
+    //this.files
+    var ele_file = $(this)[0].files[0];//获取当前文件
+    console.log(typeof (ele_file));
+    var read = new FileReader();//实例化read对象
+    read.readAsDataURL (ele_file);//获取当前文件的url
+    read.onload = function () {
+        $("#avatar_img").attr("src",this.result);//this.result 就是read.readAsDataURL获取到的url路径
+    }
+
+});
+//注册校验
+$("#register").on("click",function () {
+    var formData = new FormData();//实例化formData对象
+    formData.append("email",$("#id_email").val());//获取email值
+    formData.append("telephone",$("#id_telephone").val());//获取telephone值
+    formData.append("username",$("#id_username").val());//获取username值
+    formData.append("nick_name",$("#id_nick_name").val());//获取nick_name值
+    formData.append("password",$("#id_password").val());//获取password值
+    formData.append("repeat_password",$("#id_repeat_password").val());//获取repeat_password值
+    formData.append("avatar_img",$("#avatar_file")[0].files[0]);//获取文件二进制
+    console.log(formData);
+    $(".pull-right").html("");//为避免重新错误重复提示，每次提交都清除数据
+{#    $(".pull-right").parent().removeClass("has-error");#}
+
+
+
+    $.ajax({
+        url:"/register/",
+        type:"POST",
+        data:formData,
+        headers: {"X-CSRFToken": $.cookie('csrftoken')},
+        contentType:false,//必须加的字段，不加的话二进制文件传不过去
+        processData:false,
+        success:function (data) {
+            var dat = JSON.parse(data);
+            console.log(dat);
+            if (dat.user){
+                location.href = "/login/"
+            }
+            else{
+                //jquery循环取出error_list里面的键值对
+                $.each(dat.error_list,function (i,j) {
+                    console.log(i,j);
+                    $span = $("<span>");//造span标签
+                    $span.addClass("pull-right").css("color","red");//让span标签显示在右边
+                    $span.html(j[0]);//给span赋值
+                    $("#id_"+i) .after($span).parent().addClass("has-error");
+
+
+                    if (i == "__all__"){//__all__ 里面存放的是全局钩子的数据
+                        $("input[name=repeat_password]").after($span);
+
+                    }
+
+
+
+                })
+            }
+        }
+    })
+
+})
+</script>
+</body>
+</html>
