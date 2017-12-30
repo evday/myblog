@@ -9,6 +9,7 @@ from django.contrib import admin
 from blog import views
 
 urlpatterns = [
+    url (r"^(?P<username>.*)/articles/(?P<article_id>\d+)/$",views.articleDetail),
     url (r"^(?P<username>.*)/(?P<condition>category|tag|date)/(?P<para>.*)/$",views.homeSite),
     url (r"^(?P<username>.*)/$",views.homeSite,name = "aaa"),
 

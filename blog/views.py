@@ -144,6 +144,13 @@ def register(request):
         return HttpResponse (json.dumps (registerResponse))
 
 def index(request,*args,**kwargs):
+    '''
+    网站首页
+    :param request:
+    :param args:
+    :param kwargs:
+    :return:
+    '''
     if kwargs:
         article_list = models.Article.objects.filter(site_article_category__name=kwargs.get("site_article_category"))
     else:
@@ -195,3 +202,34 @@ def homeSite(request,username,*args,**kwargs):
             article_list = models.Article.objects.filter(user=current_user,create_time__year=year,create_time__month=month)
 
     return render(request,'homeSite.html',locals())
+
+def articleDetail(request,username,article_id):
+    '''
+    文章详情
+    :param request:
+    :param username:
+    :param article_id:
+    :return:
+    '''
+    current_user = models.UserInfo.objects.filter(username=username).first()
+    print(current_user)
+    current_blog = current_user.blog
+    if not current_user:
+        return render(request,'not_fond.html')
+
+    # 查询当前用户的所有文章
+    article_list = models.Article.objects.filter(user=current_user)
+
+    #查询当前用户的分类归档
+    category_list = models.Category.objects.all().filter(blog=current_blog).annotate(c = Count("article__id")).values_list("title","c")
+
+    #查询当前用户的标签归档
+    tag_list = models.Tag.objects.all().filter(blog= current_blog).annotate(c = Count("article__id")).values_list("title","c")
+
+    #查询当前用户的日期归档
+    date_list = models.Article.objects.all().filter(user=current_user).extra(select={
+        "filter_create_time":"strftime('%%Y/%%m',create_time)"
+    }).values_list("filter_create_time").annotate(Count("id"))
+
+    article_obj = models.Article.objects.filter(id=article_id).first()
+    return render(request,'articledetail.html',locals())

@@ -1,0 +1,9 @@
+{% extends 'homeSite.html' %}
+{% block content %}
+<div class="article_region">
+<div class="row">
+    <h2 class="text-center">{{ article_obj.title }}</h2>
+    <div class="article_con">{{ article_obj.articledetail.content|safe }}</div>
+</div>
+</div>
+{% endblock %}
