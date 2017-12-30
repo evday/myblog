@@ -1,0 +1,59 @@
+.article_region .article_con {
+    margin-left: 20px;
+}
+
+.diggit {
+    width: 46px;
+    height: 52px;
+    background: url("/static/image/upup.gif") no-repeat;
+    text-align: center;
+    cursor: pointer;
+    margin-top: 2px;
+    padding-top: 5px;
+}
+
+.buryit {
+    margin-left: 20px;
+    width: 46px;
+    height: 52px;
+    background: url("/static/image/downdown.gif") no-repeat;
+    text-align: center;
+    cursor: pointer;
+    margin-top: 2px;
+    padding-top: 5px;
+}
+.feedbackListSubtitle{
+    position: relative;
+    widows: 690;
+    height: auto;
+    margin: 0 20px 0 20px;
+    border: none;
+    padding: 0;
+    color: #6a6352;
+    font-family: Arial,Helvetica,sans-serif;
+    font-size: 12px;
+    font-weight: normal;
+    text-decoration: none;
+}
+.feedbackCon{
+    position: relative;
+    width: 690px;
+    height: auto;
+    margin: 0 20px 0 20px;
+    /*border: black 1px dashed;*/
+    padding: 5px;
+    color: #878787;
+    font-family: Arial,Helvetica,sans-serif;
+    font-size: 12px;
+    font-weight: normal;
+    text-decoration: none;
+}
+
+
+
+#comment_content,#parent_comment_info{
+    margin-left: 10PX;
+}
+.comment_tree{
+    margin-left: 20px;
+}

@@ -1,9 +1,87 @@
 {% extends 'homeSite.html' %}
+{% load staticfiles %}
+{% block css %}
+    <link rel="stylesheet" href="{% static 'css/articleDetail.css' %}">
+{% endblock %}
 {% block content %}
-<div class="article_region">
-<div class="row">
-    <h2 class="text-center">{{ article_obj.title }}</h2>
-    <div class="article_con">{{ article_obj.articledetail.content|safe }}</div>
-</div>
-</div>
+    <div class="article_region">
+        <div class="row">
+            <h2 class="text-center">{{ article_obj.title }}</h2>
+            <div class="article_con">{{ article_obj.articledetail.content|safe }}</div>
+        </div>
+
+    </div>
+    <hr>
+    <div class="content_list feedbackItem">
+        <div id="comments_pager_top"></div>
+        <br>
+        <div class="feedback_area_title">
+            <h4>已发表评论(楼层评论)：</h4>
+        </div>
+        <div class="comment_list">
+            {% for comment in article_obj.comment_set.all %}
+                <div class="comment_item" style="border-bottom: 1px dashed black;">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <img src="{{ comment.user.avatar.url }}" alt="" width="30" height="30">
+                            <a href="/blog/{{ comment.user.username }}">{{ comment.user.username }}</a>发表于：{{ comment.create_time|date:"Y-m-d H:i" }}
+                        </div>
+                        <div class="col-md-2 pull-right">
+                            <a class="replay_comment_btn" comment_username="{{ comment.user.username }}"
+                               comment_id="{{ comment.id }}">回复</a>
+                        </div>
+                    </div>
+                    <div class="row">
+                        {% if comment.parent_commend_id %}
+                            <div id="parent_comment_info">
+                                <a href="">@{{ comment.parent_comment.user.username }}</a>
+                                {{ comment.parent_comment.content }}
+                            </div>
+                        {% endif %}
+                        <div class="comment_content">
+                            {{ comment }}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="datasave hide">{{ article_obj.id }}</div>
+    <div id="div_digg">
+        <div class="buryit pull-right">
+            <span class="burynum" id="bury_count"></span>
+        </div>
+        <div class="diggit pull-right">
+            <span class="diggnum" id="digg_count">{{ article_obj.up_count }}</span>
+        </div>
+    </div>
+    <span class="diggnum_error"></span>
+    <div id="comment_form_container">
+        <div id="commentform_title">发表评论</div>
+        <span id="tip_comment" style="color:Red"></span>
+        <p class="tip_input">
+            昵称：<input type="text" id="tbCommentAuthor" class="author" disabled="disabled" size="50"
+                      value="{{ request.user.username }}">
+        </p>
+        <div class="commentbox_main">
+            <div class="commentbox_title">
+                <div class="commentbox_title_left">评论内容：</div>
+
+            </div>
+            <form action="">
+                {% csrf_token %}
+                <p><textarea cols="60" rows="10" class="comment_text" id="comment_con"></textarea></p>
+                <a href="#article_comment"></a>
+                <input type="button" class="btn btn-danger article_comment" id="article_comment" value="提交评论">
+            </form>
+
+        </div>
+
+
+    </div>
+{% endblock %}
+{% block js %}
+    <script src="{% static 'js/jquery-3.2.1.min.js' %}"></script>
+    <script src="{% static 'js/jquery.cookie.js' %}"></script>
+    <script src="{% static 'js/articleDetail.js' %}"></script>
 {% endblock %}

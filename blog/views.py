@@ -5,6 +5,7 @@ from io import BytesIO
 from django.shortcuts import render,HttpResponse,redirect
 from django.contrib import auth
 from django.db.models import Count,F
+from django.db import transaction
 
 from PIL import Image,ImageDraw,ImageFont
 
@@ -233,3 +234,27 @@ def articleDetail(request,username,article_id):
 
     article_obj = models.Article.objects.filter(id=article_id).first()
     return render(request,'articledetail.html',locals())
+
+def poll(request):
+    '''
+    点赞
+    :param request:
+    :return:
+    '''
+    pollResponse = {"status":True,"is_repeat":None,"user":None}
+    if not request.user.is_authenticated():
+        pollResponse["user"] = True
+    else:
+        user_id = request.user.id
+        article_id = request.POST.get("article_id")
+        if models.ArticleUp.objects.filter(user_id=user_id,article_id=article_id):
+            pollResponse["is_repeat"] = True
+            pollResponse["status"] = False
+        else:
+            try:
+                with transaction.atomic():
+                    models.ArticleUp.objects.create(user_id=user_id,article_id=article_id)
+                    models.Article.objects.filter(id=article_id).update(up_count=F("up_count")+1)
+            except:
+                pollResponse["status"] = False
+    return HttpResponse(json.dumps(pollResponse))
