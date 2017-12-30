@@ -2,23 +2,27 @@ import random
 import json
 from io import BytesIO
 
-from django.shortcuts import render,HttpResponse
+from django.shortcuts import render,HttpResponse,redirect
 from django.contrib import auth
-from django.contrib.auth.hashers import make_password, check_password
+from django.db.models import Count,F
 
 from PIL import Image,ImageDraw,ImageFont
 
 from blog.forms import RegisterForm
 from blog import models
+from myblog.utils.page import Pagination
 
 # Create your views here.
 def md5(val):
+    '''
+    md5 加密
+    :param val:
+    :return:
+    '''
     import hashlib
     m = hashlib.md5()
     m.update(val.encode('utf-8'))
     return m.hexdigest()
-
-
 
 
 def sign_in(request):
@@ -58,6 +62,9 @@ def sign_in(request):
             state["state"] = "validCode_error"
         return HttpResponse(json.dumps(state))
 
+def logout(request):
+    auth.logout(request)
+    return redirect('/login/')
 
 def get_valid_code(request):
     '''
@@ -106,31 +113,35 @@ def get_valid_code(request):
     return HttpResponse(data)
 
 def register(request):
+    '''
+    注册
+    :param request:
+    :return:
+    '''
+    if request.method == "GET":
+        form = RegisterForm ()
+        return render (request,'register.html',{"form":form})
+    elif request.is_ajax ():
 
-        if request.method == "GET":
-            form = RegisterForm ()
-            return render (request,'register.html',{"form":form})
-        elif request.is_ajax ():
+        form = RegisterForm (request.POST)
+        registerResponse = {"user":None,"error_list":None}
+        # print(type(form))
+        if form.is_valid ():
 
-            form = RegisterForm (request.POST)
-            registerResponse = {"user":None,"error_list":None}
-            # print(type(form))
-            if form.is_valid ():
+            email = form.cleaned_data.get ("email")
+            telephone = form.cleaned_data.get ("telephone")
+            username = form.cleaned_data.get ("username")
+            nick_name = form.cleaned_data.get ("nick_name")
+            password = form.cleaned_data.get ("password")
+            avatar_img = request.FILES.get ("avatar_img")
 
-                email = form.cleaned_data.get ("email")
-                telephone = form.cleaned_data.get ("telephone")
-                username = form.cleaned_data.get ("username")
-                nick_name = form.cleaned_data.get ("nick_name")
-                password = form.cleaned_data.get ("password")
-                avatar_img = request.FILES.get ("avatar_img")
+            models.UserInfo.objects.create_user (email = email,telephone = telephone,username = username,
+                                                 nick_name = nick_name,password = md5(password),avatar = avatar_img)
+            registerResponse ["user"] = form.cleaned_data.get ("username")
 
-                models.UserInfo.objects.create_user (email = email,telephone = telephone,username = username,
-                                                     nick_name = nick_name,password = md5(password),avatar = avatar_img)
-                registerResponse ["user"] = form.cleaned_data.get ("username")
-
-            else:
-                registerResponse ["error_list"] = form.errors
-            return HttpResponse (json.dumps (registerResponse))
+        else:
+            registerResponse ["error_list"] = form.errors
+        return HttpResponse (json.dumps (registerResponse))
 
 def index(request,*args,**kwargs):
     if kwargs:
@@ -138,8 +149,49 @@ def index(request,*args,**kwargs):
     else:
         article_list = models.Article.objects.all()
     cate_list = models.SiteCategory.objects.all()
-    return render(request,'index.html',{"article_list":article_list,"cate_list":cate_list})
+    pager_obj = Pagination (request.GET.get ('page',1),len (article_list),request.path_info,request.GET)
+    host_list = article_list [pager_obj.start:pager_obj.end]
+    html = pager_obj.page_html ()
+    return render(request,'index.html',{"article_list":host_list,"cate_list":cate_list,"page_html":html})
 
 
-def homeSite(request):
-    pass
+def homeSite(request,username,*args,**kwargs):
+    '''
+    个人站点
+    :param request:
+    :param username:
+    :param args:
+    :param kwargs:
+    :return:
+    '''
+
+    current_user = models.UserInfo.objects.filter(username = username).first()
+
+    current_blog = current_user.blog
+
+    if not current_user:
+        return render(request,'not_fond.html')
+
+    # 查询当前用户的所有文章
+    article_list = models.Article.objects.filter(user=current_user)
+
+    # 查询当前用户的分档归类
+    category_list = models.Category.objects.all().filter(blog=current_blog).annotate(c=Count("article__id")).values_list("title","c")
+
+    # 查询当前用户的标签归类
+    tag_list = models.Tag.objects.all().filter(blog=current_blog).annotate(c=Count("article__id")).values_list("title","c")
+
+    # 查询当前用户的日期归类
+    date_list = models.Article.objects.all().filter(user=current_user).extra(select = {
+        "filter_create_time":"strftime('%%Y/%%m',create_time)"}).values_list("filter_create_time").annotate(Count("pk"))
+
+    if kwargs:
+        if kwargs.get("condition") == "category":
+            article_list = models.Article.objects.filter(user=current_user,category__title=kwargs.get("para"))
+        elif kwargs.get("condition") == "tag":
+            article_list = models.Article.objects.filter(user=current_user,tag__title=kwargs.get("para"))
+        elif kwargs.get("condition") == "date":
+            year,month = kwargs.get("date").splite("/")
+            article_list = models.Article.objects.filter(user=current_user,create_time__year=year,create_time__month=month)
+
+    return render(request,'homeSite.html',locals())

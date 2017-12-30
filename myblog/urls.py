@@ -25,6 +25,7 @@ urlpatterns = [
     url(r'^$', views.index),
     url (r'^cate/(?P<site_article_category>.*)/$',views.index),
     url(r'^login/$', views.sign_in),
+    url(r'^logout/$', views.logout),
     url(r'^get_validCode/$', views.get_valid_code),
     url(r'^register/$', views.register),
 
