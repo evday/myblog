@@ -6,6 +6,7 @@ from django.shortcuts import render,HttpResponse,redirect
 from django.contrib import auth
 from django.db.models import Count,F
 from django.db import transaction
+from django.http import JsonResponse
 
 from PIL import Image,ImageDraw,ImageFont
 
@@ -212,6 +213,7 @@ def articleDetail(request,username,article_id):
     :param article_id:
     :return:
     '''
+    models.Article.objects.filter(id=article_id).update(read_count = F("read_count")+1)
     current_user = models.UserInfo.objects.filter(username=username).first()
     print(current_user)
     current_blog = current_user.blog
@@ -233,7 +235,10 @@ def articleDetail(request,username,article_id):
     }).values_list("filter_create_time").annotate(Count("id"))
 
     article_obj = models.Article.objects.filter(id=article_id).first()
-    return render(request,'articledetail.html',locals())
+    obj = render (request,"articleDetail.html",locals ())
+    obj.set_cookie ("user_username",request.user.username)#第一步将用户名放置到cookie中，这里是解决点赞之前登录
+    obj.set_cookie ("next_path",request.path)
+    return obj
 
 def poll(request):
     '''
@@ -258,3 +263,34 @@ def poll(request):
             except:
                 pollResponse["status"] = False
     return HttpResponse(json.dumps(pollResponse))
+
+def article_comment(request):
+    '''
+    评论
+    :param request:
+    :return:
+    '''
+    response = {"user":None,"state":None,"create_time":None}
+    if not request.user.is_authenticated():
+        response["user"] = False
+        return JsonResponse(response)
+    user_id = request.POST.get("user_id")
+    content = request.POST.get("comment_content")
+    article_id = request.POST.get("article")
+
+    #对评论进行评论
+    if request.POST.get("parent_comment_id"):
+        with transaction.atomic():
+            pid = request.POST.get("parent_comment_id")
+            comment_obj = models.Comment.objects.create(content=content,user_id=user_id,article_id=article_id,parent_comment_id=pid)
+            response["create_time"] = str(comment_obj.content_time)
+            response["parent_comment_username"] = comment_obj.parent_comment.user.username
+            response["parent_comment_content"] = comment_obj.parent_comment.content
+    else:
+        with transaction.atomic():
+            comment_obj = models.Comment.objects.create(content=content,user_id=user_id,article_id=article_id)
+            models.Article.objects.filter(id=article_id).update(comment_count=F("comment_count")+1)
+
+    response["comment_id"] = comment_obj.id
+    response["create_time"] = str(comment_obj.content_time)
+    return JsonResponse(response)

@@ -30,7 +30,7 @@ urlpatterns = [
     url(r'^register/$', views.register),
 
     # 个人站点首页
-    url(r'^blog/', include("blog.urls")),
+    url(r'^blog/', include("blog.urls",namespace = "blog")),
     # 配置media
     url (r'^media/(?P<path>.*)$',serve,{"document_root":settings.MEDIA_ROOT}),
 ]

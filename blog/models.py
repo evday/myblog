@@ -88,8 +88,8 @@ class Article(models.Model):
     '''
     title = models.CharField(max_length=50,verbose_name="文章标题")
     desc = models.CharField(max_length=255,verbose_name="文章描述")
-    read_count = models.IntegerField(verbose_name="评论数",default=0)
-    comment_count = models.IntegerField(verbose_name="阅读数",default=0)
+    read_count = models.IntegerField(verbose_name="阅读数",default=0)
+    comment_count = models.IntegerField(verbose_name="评论数",default=0)
     up_count = models.IntegerField(verbose_name="点赞数",default=0)
     create_time = models.DateTimeField(verbose_name="创建时间")
     user = models.ForeignKey(to="UserInfo",verbose_name="所属用户")

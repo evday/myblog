@@ -4,7 +4,8 @@
 //ajax 实现点赞功能
 
 $(".diggit").on("click", function () {
-    $.ajax({
+    if($.cookie("username")){
+        $.ajax({
         url: "/blog/poll/",
         type: "POST",
         headers: {"X-CSRFToken": $.cookie('csrftoken')},
@@ -18,9 +19,14 @@ $(".diggit").on("click", function () {
                 $("#digg_count").html(val)
             }
             else if (dat.is_repeat) {
-                $(".diggnum_error").html("重复提交").css("color", "red")
+                $(".diggnum_error").html("不能重复点赞").css("color", "red")
             }
         }
 
     })
+    }
+    else{
+        location.href="/login/?next="+$.cookie("next_path")
+    }
 });
+

@@ -66,11 +66,11 @@
             <div class="article_list text-left" style="font-size: 15px">
                 <div class="article_item">
                     {% for article in article_list %}
-                        <div class="article_title row"><a href="">{{ article.title }}</a></div>
+                        <div class="article_title row"><a href="{% url 'blog:article_detail' article.user.username article.id %}">{{ article.title }}</a></div>
                         <p></p>
                         <div class="row">
                             <div class=" avatar_img col-md-1 ">
-                                <a href="{% url 'aaa' article.user.username %}"><img src="{{ article.user.avatar.url }}"
+                                <a href="{% url 'blog:aaa' article.user.username %}"><img src="{{ article.user.avatar.url }}"
                                                                                      alt=""
                                                                                      class="user_avatar  thumbnail"></a>
                             </div>
@@ -81,10 +81,10 @@
                         <div class="row pub_info">
                             <a href="/blog/{{ article.user.username }}"><span>{{ article.user.username }}</span> </a>&nbsp;&nbsp;&nbsp;发布于{{ article.create_time|date:"Y-m-d H:i" }}
 
-                            &emsp;<span class="glyphicon glyphicon-comment"></span><a href="">
+                            &emsp;<span class="glyphicon glyphicon-comment"></span><a href="{% url 'blog:article_detail' article.user.username article.id %}">
                             &nbsp;&nbsp;评论数（{{ article.comment_count }}）</a>
                             &emsp;<span
-                                class="glyphicon glyphicon-hand-right"></span><a href="">
+                                class="glyphicon glyphicon-hand-right"></span><a href="{% url 'blog:article_detail' article.user.username article.id %}">
                             &nbsp;&nbsp;点赞数（{{ article.up_count }}）</a>
                         </div>
                         <hr>

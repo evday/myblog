@@ -12,6 +12,15 @@
 
     </div>
     <hr>
+    <div id="div_digg">
+        <div class="buryit pull-right">
+            <span class="burynum" id="bury_count"></span>
+        </div>
+        <div class="diggit pull-right">
+            <span class="diggnum" id="digg_count">{{ article_obj.up_count }}</span>
+        </div>
+    </div>
+    <span class="diggnum_error"></span>
     <div class="content_list feedbackItem">
         <div id="comments_pager_top"></div>
         <br>
@@ -24,7 +33,7 @@
                     <div class="row">
                         <div class="col-md-6">
                             <img src="{{ comment.user.avatar.url }}" alt="" width="30" height="30">
-                            <a href="/blog/{{ comment.user.username }}">{{ comment.user.username }}</a>发表于：{{ comment.create_time|date:"Y-m-d H:i" }}
+                            <a href="/blog/{{ comment.user.username }}">{{ comment.user.username }}</a>发表于：{{ comment.content_time|date:"Y-m-d H:i" }}
                         </div>
                         <div class="col-md-2 pull-right">
                             <a class="replay_comment_btn" comment_username="{{ comment.user.username }}"
@@ -32,30 +41,23 @@
                         </div>
                     </div>
                     <div class="row">
-                        {% if comment.parent_commend_id %}
+                        {% if comment.parent_comment_id %}
                             <div id="parent_comment_info">
                                 <a href="">@{{ comment.parent_comment.user.username }}</a>
                                 {{ comment.parent_comment.content }}
                             </div>
                         {% endif %}
-                        <div class="comment_content">
+                        <div class="comment_content" style="margin-left: 10px">
                             {{ comment }}
                         </div>
                     </div>
                 </div>
+                <br>
             {% endfor %}
         </div>
     </div>
     <div class="datasave hide">{{ article_obj.id }}</div>
-    <div id="div_digg">
-        <div class="buryit pull-right">
-            <span class="burynum" id="bury_count"></span>
-        </div>
-        <div class="diggit pull-right">
-            <span class="diggnum" id="digg_count">{{ article_obj.up_count }}</span>
-        </div>
-    </div>
-    <span class="diggnum_error"></span>
+
     <div id="comment_form_container">
         <div id="commentform_title">发表评论</div>
         <span id="tip_comment" style="color:Red"></span>
@@ -84,4 +86,73 @@
     <script src="{% static 'js/jquery-3.2.1.min.js' %}"></script>
     <script src="{% static 'js/jquery.cookie.js' %}"></script>
     <script src="{% static 'js/articleDetail.js' %}"></script>
+    <script>
+     // 评论
+        $(".article_comment").on("click", function () {
+            var content;
+            if ($("#comment_con").val().charAt(0) != "@") {
+                //这里简单的解决了如果用户点击了回复之后将@用户名给删除了，
+                // 但是这时候系统还是默认这是一条子评论，
+                // 所以我们在这里将parent_comment_id 等于null表示根评论
+                parent_comment_id = null
+            }
+            if (parent_comment_id) {
+                var index = $("#comment_con").val().indexOf("\n");//获取换行符的索引
+                content = $("#comment_con").val().slice(index + 1);//从index取到最后，加1？？？大概是因为index后面还有一个空格吧
+            } else {
+                content = $("#comment_con").val()
+            }
+
+
+            $.ajax({
+                url: "/blog/article_comment/",
+                type: "POST",
+                headers: {"X-CSRFToken": $.cookie('csrftoken')},
+                data: {
+                    user_id: "{{ request.user.id }}",
+                    comment_content: content,
+                    article: "{{ article_obj.id }}",
+                    parent_comment_id: parent_comment_id//父评论id,后台需要这条数据来判断
+                },
+                success: function (data) {
+
+                    console.log(data.parent_comment_content);
+                    if (!$.cookie("user_username")) {
+                        location.href = "/sign_in/?next="+$.cookie("next_path")+"/#article_comment"
+                    }
+                    else {
+                        //如果有父级评论的id，这条评论就是子评论，这里的字符串就得加上父评论的名字和内容
+                        // 这里默认评论人就是当前的登录用户
+                        if (parent_comment_id) {//子评论
+                            s = '<div style="border-bottom: 1px dashed black"> ' +
+                                    '<div class="row"> <div class="col-md-6"> ' +
+                                    '<img src="{{ request.user.avatar.url }}" alt="" width="30" height="30">&nbsp;<a href="/blog/{{ request.user.username }}">{{ request.user.username }}</a>发表于：' + data.create_time.slice(0, 19) + '</div> <div class="col-md-2 pull-right"><a comment_username="{{ request.user.username }}" comment_id=' + data.comment_id + ' class="replay_comment_btn">回复</a></div></div><div class="row">' + '<div id="parent_comment_info"><a href="">@' + data.parent_comment_username + '</a>:&nbsp;&nbsp;&nbsp;' + data.parent_comment_content + '</div><div id="comment_content">' + content + '</div></div></div></div>';
+
+                        }
+                        else {// 根评论
+                            s = '<div style="border-bottom: 1px dashed black"> ' +
+                                    '<div class="row"> <div class="col-md-6"> ' +
+                                    '<img src="{{ request.user.avatar.url }}" alt="" width="30" height="30">&nbsp;<a href="/blog/{{ request.user.username }}">{{ request.user.username }}</a>发表于：' + data.create_time.slice(0, 19) + '</div> <div class="col-md-2 pull-right"><a comment_username="{{ request.user.username }}" comment_id=' + data.comment_id + ' class="replay_comment_btn">回复</a></div></div><div class="row"><div id="comment_content">' + content + '</div></div></div></div>';
+
+                        }
+
+                        $(".comment_list").append(s);
+                        $("#comment_con").val("");//每次评论完成清空textarea里面的内容
+                        parent_comment_id = null;//每次评论结束清空父评论id,避免下次评论被误认为还是一次子评论
+                    }
+
+                }
+            })
+        });
+        //ajax 实现子评论
+        var parent_comment_id = null; //全局变量
+        $(".comment_list").on("click", ".replay_comment_btn", function () {
+            //文本框中显示父级评论的名字
+            var parent_comment_username = $(this).attr("comment_username");
+            $("#comment_con").focus();//获取焦点，当然这里也可以利用a标签的锚点来做
+            $("#comment_con").val("@" + parent_comment_username + "\n");
+            //获取父级评论的id,点击提交评论的时候会根据这条数据判断是否是子评论
+            parent_comment_id = $(this).attr("comment_id")
+        });
+    </script>
 {% endblock %}
