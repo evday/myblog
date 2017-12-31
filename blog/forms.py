@@ -8,6 +8,7 @@ from django.core.exceptions import ValidationError
 
 
 from blog import models
+from blog.blugins.xss_blugin import filter_xss
 
 
 class RegisterForm(Form):
@@ -81,3 +82,12 @@ class RegisterForm(Form):
             raise ValidationError("两次输入的密码不一致")
 
 
+class ArticleForm(Form):
+    title = fields.CharField(widget = widgets.TextInput(attrs = {"class":"form-control"}),error_messages = {"required":"标题不能为空"},max_length = 20)
+    content = fields.CharField(widget = widgets.Textarea(attrs = {"class":"form-control"}),error_messages = {"required":"内容不能为空"})
+
+    def clean_content(self):
+        html_str = self.cleaned_data.get("content")
+        clean_data = filter_xss(html_str)
+        self.cleaned_data["content"] = clean_data
+        return self.cleaned_data["content"]

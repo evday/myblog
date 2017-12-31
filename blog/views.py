@@ -1,18 +1,23 @@
 import random
 import json
+import datetime
 from io import BytesIO
+import os
 
 from django.shortcuts import render,HttpResponse,redirect
 from django.contrib import auth
 from django.db.models import Count,F
 from django.db import transaction
 from django.http import JsonResponse
+from django.conf import settings
 
 from PIL import Image,ImageDraw,ImageFont
+from bs4 import BeautifulSoup
 
 from blog.forms import RegisterForm
 from blog import models
 from myblog.utils.page import Pagination
+from blog.forms import ArticleForm
 
 # Create your views here.
 def md5(val):
@@ -294,3 +299,73 @@ def article_comment(request):
     response["comment_id"] = comment_obj.id
     response["create_time"] = str(comment_obj.content_time)
     return JsonResponse(response)
+
+def backendIndex(request):
+    '''
+    个人后台
+    :param request:
+    :return:
+    '''
+    if not request.user.is_authenticated():
+        return redirect('/login/')
+    article_list = models.Article.objects.filter(user=request.user)
+    return render(request,'backendIndex.html',{"article_list":article_list})
+
+
+
+def addArticle(request):
+    '''
+    添加文章
+    :param request:
+    :return:
+    '''
+    if request.method == "GET":
+        article_form = ArticleForm()
+        cate_list = models.Category.objects.filter(blog__user = request.user)
+        tag_list = models.Tag.objects.filter(blog__user = request.user)
+
+        return render(request,"addArticle.html",locals())
+    if request.method == "POST":
+        article_form = ArticleForm(request.POST)
+        if article_form.is_valid():
+            title = article_form.cleaned_data.get("title")
+            content = article_form.cleaned_data.get("content")
+            cate_obj = request.POST.get("cate_list")
+            tag_obj_list = request.POST.getlist("tag_list")
+
+
+            soup = BeautifulSoup (content,'html.parser')
+            content_desc = soup.get_text () [:100]
+            with transaction.atomic():
+                article_obj = models.Article.objects.create(title=title,desc = content_desc,create_time=datetime.datetime.now(),user=request.user,category_id=cate_obj)
+                models.ArticleDetail.objects.create(content=content,article=article_obj)
+
+                if tag_obj_list:
+                    for i in tag_obj_list:
+                        models.Article_Tag.objects.create(article_id=article_obj.id,tag_id=i)
+
+                return HttpResponse("添加成功")
+    else:
+        return render(request,'addArticle.html',locals())
+
+def uploadFile(request):
+        '''
+        存储用户添加文章时上传的图片
+        :param request:
+        :return:
+        '''
+        file_obj = request.FILES.get("imgFile")
+        file_name = file_obj.name
+
+        #拼接文件存储路径
+        path = os.path.join(settings.MEDIA_ROOT,"article_uploads",file_name)
+
+        with open(path,"wb") as f:
+            for i in file_obj.chunks():
+                f.write(i)
+
+        response = {
+            "error":0,
+            "url":"/media/article_uploads/"+file_name+"/"
+        }
+        return HttpResponse(json.dumps(response))

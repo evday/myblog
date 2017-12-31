@@ -11,6 +11,8 @@ from blog import views
 urlpatterns = [
     url(r"^article_comment/$",views.article_comment),
     url(r"^poll/$",views.poll),
+    url(r"^backend/$",views.backendIndex),
+    url (r"^backend/addArticle/$",views.addArticle),
     url (r"^(?P<username>.*)/articles/(?P<article_id>\d+)/$",views.articleDetail,name = "article_detail"),
     url (r"^(?P<username>.*)/(?P<condition>category|tag|date)/(?P<para>.*)/$",views.homeSite),
     url (r"^(?P<username>.*)/$",views.homeSite,name = "aaa"),

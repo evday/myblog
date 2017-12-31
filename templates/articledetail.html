@@ -62,7 +62,7 @@
         <div id="commentform_title">发表评论</div>
         <span id="tip_comment" style="color:Red"></span>
         <p class="tip_input">
-            昵称：<input type="text" id="tbCommentAuthor" class="author" disabled="disabled" size="50"
+            昵称：<input type="text" id="tbCommentAuthor" class="author form-control" disabled="disabled" size="50"
                       value="{{ request.user.username }}">
         </p>
         <div class="commentbox_main">
@@ -72,7 +72,7 @@
             </div>
             <form action="">
                 {% csrf_token %}
-                <p><textarea cols="60" rows="10" class="comment_text" id="comment_con"></textarea></p>
+                <p><textarea cols="60" rows="10" class="comment_text form-control" id="comment_con"></textarea></p>
                 <a href="#article_comment"></a>
                 <input type="button" class="btn btn-danger article_comment" id="article_comment" value="提交评论">
             </form>
@@ -86,8 +86,9 @@
     <script src="{% static 'js/jquery-3.2.1.min.js' %}"></script>
     <script src="{% static 'js/jquery.cookie.js' %}"></script>
     <script src="{% static 'js/articleDetail.js' %}"></script>
+    <script src="/static/kindeditor/kindeditor-all.js"></script>
     <script>
-     // 评论
+        // 评论
         $(".article_comment").on("click", function () {
             var content;
             if ($("#comment_con").val().charAt(0) != "@") {
@@ -118,7 +119,7 @@
 
                     console.log(data.parent_comment_content);
                     if (!$.cookie("user_username")) {
-                        location.href = "/sign_in/?next="+$.cookie("next_path")+"/#article_comment"
+                        location.href = "/sign_in/?next=" + $.cookie("next_path") + "/#article_comment"
                     }
                     else {
                         //如果有父级评论的id，这条评论就是子评论，这里的字符串就得加上父评论的名字和内容
@@ -155,4 +156,5 @@
             parent_comment_id = $(this).attr("comment_id")
         });
     </script>
+
 {% endblock %}

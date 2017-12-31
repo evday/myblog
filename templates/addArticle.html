@@ -1,0 +1,47 @@
+{% extends 'backendIndex.html' %}
+
+{% block manageCon %}
+
+     <form action="/blog/backend/addArticle/" method="post" novalidate>
+         {% csrf_token %}
+         <div>
+             <label for="title">标题：</label>
+             <p>{{ article_form.title }}{{ article_form.errors.title.0 }}</p>
+         </div>
+         <div>
+             <label for="title">内容：</label>
+             <p>
+                 {{ article_form.content }}{{ article_form.errors.content.0 }}
+
+             </p>
+         </div>
+
+
+        <div>
+             {% for cate in cate_list %}
+             <input type="radio" name="cate_list" value="{{ cate.id }}">{{ cate.title }}
+             {% endfor %}
+         </div>
+        <div>
+            {% for tag in tag_list %}
+            <input type="checkbox" name="tag_list" value="{{ tag.id }}">{{ tag.title }}
+            {% endfor %}
+        </div>
+        <p><input type="submit" value="提交" class="btn btn-success"></p>
+    </form>
+
+    <script>
+        //页面加载完才执行
+        KindEditor.ready(function (K) {
+            window.editor = K.create('#id_content',{
+                width:"750px",
+                height:"500px",
+                resizeType:0,//是否可缩放
+                uploadJson:"/uploadFile/",//用户上传文件路径
+                extraFileUploadParams:{ //防止被forbidden
+                           csrfmiddlewaretoken:$("[name='csrfmiddlewaretoken']").val(),
+                       }
+            })
+        })
+    </script>
+{% endblock %}

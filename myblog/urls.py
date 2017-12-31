@@ -33,4 +33,7 @@ urlpatterns = [
     url(r'^blog/', include("blog.urls",namespace = "blog")),
     # 配置media
     url (r'^media/(?P<path>.*)$',serve,{"document_root":settings.MEDIA_ROOT}),
+
+    #处理用户添加文章时上传的图片
+    url(r'^uploadFile/$', views.uploadFile),
 ]
